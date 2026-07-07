@@ -1,6 +1,7 @@
 package com.zib;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -13,6 +14,10 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.zib.error.ZibException;
+import com.zib.runtime.TempDirectoryManager;
+import com.zib.tts.TtsService;
+
 class ZibAppTest {
     @TempDir
     Path tempDir;
@@ -22,7 +27,7 @@ class ZibAppTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ByteArrayOutputStream err = new ByteArrayOutputStream();
 
-        int exitCode = ZibApp.run(new String[0], printStream(out), printStream(err));
+        int exitCode = ZibApp.run(new String[0], printStream(out), printStream(err), new FakeTtsService(), new TempDirectoryManager(tempDir));
 
         assertEquals(1, exitCode);
         assertEquals("", out.toString(StandardCharsets.UTF_8));
@@ -30,20 +35,25 @@ class ZibAppTest {
     }
 
     @Test
-    void parsesAndValidatesRegularFileWithoutStartingAudio() throws IOException {
+    void parsesValidatesAndGeneratesTtsWithoutStartingAudio() throws IOException {
         Path inputFile = Files.createFile(tempDir.resolve("demo.zib"));
         Files.writeString(inputFile, "\"Hello ${effect.wav}\"", StandardCharsets.UTF_8);
         Files.createFile(tempDir.resolve("effect.wav"));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ByteArrayOutputStream err = new ByteArrayOutputStream();
+        FakeTtsService ttsService = new FakeTtsService();
 
-        int exitCode = ZibApp.run(new String[] { inputFile.toString() }, printStream(out), printStream(err));
+        int exitCode = ZibApp.run(new String[] { inputFile.toString() }, printStream(out), printStream(err), ttsService, new TempDirectoryManager(tempDir));
 
         assertEquals(0, exitCode);
+        assertTrue(ttsService.availabilityChecked());
+        assertEquals(1, ttsService.generatedCount());
         assertTrue(out.toString(StandardCharsets.UTF_8).contains("Input accepted: " + inputFile));
         assertTrue(out.toString(StandardCharsets.UTF_8).contains("Parser and sound marker validation completed."));
-        assertTrue(out.toString(StandardCharsets.UTF_8).contains("TTS and audio playback are not implemented yet."));
+        assertTrue(out.toString(StandardCharsets.UTF_8).contains("Generated TTS playback events: 2"));
+        assertTrue(out.toString(StandardCharsets.UTF_8).contains("Audio playback is not implemented yet."));
         assertEquals("", err.toString(StandardCharsets.UTF_8));
+        assertFalse(hasZibTempDirectory());
     }
 
     @Test
@@ -53,7 +63,7 @@ class ZibAppTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ByteArrayOutputStream err = new ByteArrayOutputStream();
 
-        int exitCode = ZibApp.run(new String[] { inputFile.toString() }, printStream(out), printStream(err));
+        int exitCode = ZibApp.run(new String[] { inputFile.toString() }, printStream(out), printStream(err), new FakeTtsService(), new TempDirectoryManager(tempDir));
 
         assertEquals(1, exitCode);
         assertEquals("", out.toString(StandardCharsets.UTF_8));
@@ -61,7 +71,87 @@ class ZibAppTest {
                 err.toString(StandardCharsets.UTF_8));
     }
 
+    @Test
+    void checksEspeakAvailabilityBeforeCreatingTempDirectory() throws IOException {
+        Path inputFile = Files.createFile(tempDir.resolve("demo.zib"));
+        Files.writeString(inputFile, "\"Hello\"", StandardCharsets.UTF_8);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        FakeTtsService ttsService = new FakeTtsService();
+        ttsService.failAvailabilityWith("espeak-ng was not found on PATH. Install it first, for example: sudo apt install espeak-ng");
+
+        int exitCode = ZibApp.run(new String[] { inputFile.toString() }, printStream(out), printStream(err), ttsService, new TempDirectoryManager(tempDir));
+
+        assertEquals(1, exitCode);
+        assertEquals("", out.toString(StandardCharsets.UTF_8));
+        assertEquals("ERROR: espeak-ng was not found on PATH. Install it first, for example: sudo apt install espeak-ng%n".formatted(),
+                err.toString(StandardCharsets.UTF_8));
+        assertFalse(hasZibTempDirectory());
+    }
+
+    @Test
+    void keepsTempDirectoryAndReportsPathWhenTtsGenerationFails() throws IOException {
+        Path inputFile = Files.createFile(tempDir.resolve("demo.zib"));
+        Files.writeString(inputFile, "\"Hello\"", StandardCharsets.UTF_8);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        FakeTtsService ttsService = new FakeTtsService();
+        ttsService.failGenerationWith("TTS failed");
+
+        int exitCode = ZibApp.run(new String[] { inputFile.toString() }, printStream(out), printStream(err), ttsService, new TempDirectoryManager(tempDir));
+
+        assertEquals(1, exitCode);
+        assertEquals("", out.toString(StandardCharsets.UTF_8));
+        assertTrue(err.toString(StandardCharsets.UTF_8).contains("ERROR: TTS failed. Temporary files kept at: "));
+        assertTrue(hasZibTempDirectory());
+    }
+
     private static PrintStream printStream(ByteArrayOutputStream output) {
         return new PrintStream(output, true, StandardCharsets.UTF_8);
+    }
+
+    private boolean hasZibTempDirectory() throws IOException {
+        try (var paths = Files.list(tempDir)) {
+            return paths.anyMatch(path -> Files.isDirectory(path) && path.getFileName().toString().startsWith("zib-"));
+        }
+    }
+
+    private static final class FakeTtsService implements TtsService {
+        private boolean availabilityChecked;
+        private int generatedCount;
+        private String availabilityFailure;
+        private String generationFailure;
+
+        @Override
+        public void checkAvailability() {
+            availabilityChecked = true;
+            if (availabilityFailure != null) {
+                throw new ZibException(availabilityFailure);
+            }
+        }
+
+        @Override
+        public void generateWav(String text, Path outputFile) {
+            if (generationFailure != null) {
+                throw new ZibException(generationFailure);
+            }
+            generatedCount++;
+        }
+
+        private boolean availabilityChecked() {
+            return availabilityChecked;
+        }
+
+        private int generatedCount() {
+            return generatedCount;
+        }
+
+        private void failAvailabilityWith(String message) {
+            availabilityFailure = message;
+        }
+
+        private void failGenerationWith(String message) {
+            generationFailure = message;
+        }
     }
 }
