@@ -94,13 +94,13 @@ mvn verify -Pintegration-tests
 java -jar target/zib-0.1.0.jar examples/demo.zib
 ```
 
-Expected behavior:
+Current skeleton behavior:
 
-1. The app reads `examples/demo.zib`.
-2. It generates speech segments with `espeak-ng`.
-3. It starts `otroski_smeh.wav` when it reaches the marker.
-4. The speech continues while the sound effect plays in the background.
-5. The app exits when speech finishes.
+1. The app validates that exactly one argument was provided.
+2. It validates that the argument exists and is a regular file.
+3. It reports that parser and audio playback are not implemented yet.
+
+Parser, eSpeak NG invocation, and WAV playback will be added in later work orders.
 
 ---
 
@@ -111,4 +111,3 @@ Expected behavior:
 - Java Sound playback: https://docs.oracle.com/javase/8/docs/technotes/guides/sound/programmer_guide/chapter4.html
 - JUnit 5: https://docs.junit.org/current/user-guide/
 - Codex AGENTS.md: https://developers.openai.com/codex/guides/agents-md
-
