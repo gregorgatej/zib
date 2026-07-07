@@ -343,7 +343,68 @@ Use the report format from `AGENTS.md` and separate automated test evidence from
 
 ---
 
-# Work Order 6 — End-to-end documentation and release readiness check
+# Work Order 6 — English demo content
+
+## Governing instructions
+
+Read `AGENTS.md`, `TECHNICAL_SPEC.md`, `ARCHITECTURE.md`, and `TESTING_STRATEGY.md` first.
+
+## Goal
+
+Switch the canonical demo from Slovene to English because the POC currently uses eSpeak NG with the default English voice.
+
+## Scope
+
+Implement:
+
+- English demo text in `examples/demo.zib`;
+- English WAV marker filename `children_laughing.wav`;
+- docs/spec/test expectations that match the English demo;
+- rename the tracked example WAV from `otroski_smeh.wav` to `children_laughing.wav`.
+
+Canonical demo:
+
+```zib
+"Today is a beautiful day. The children are playing outside ${children_laughing.wav} on the playground."
+```
+
+## Non-goals
+
+- No Slovene support yet.
+- No language selection.
+- No voice configuration UI.
+- No change to the parser syntax.
+- No MP3 support.
+
+## Tests required
+
+Run:
+
+```bash
+mvn test
+mvn package
+```
+
+Manual smoke test if audio environment is available:
+
+```bash
+java -jar target/zib-0.1.0.jar examples/demo.zib
+```
+
+Expected manual result:
+
+- English speech is pronounced naturally by the default eSpeak voice;
+- `children_laughing.wav` starts at the marker;
+- speech continues after the marker;
+- app exits after final speech.
+
+## Final report required
+
+Use the report format from `AGENTS.md` and separate automated test evidence from manual smoke test evidence.
+
+---
+
+# Work Order 7 — End-to-end documentation and release readiness check
 
 ## Governing instructions
 

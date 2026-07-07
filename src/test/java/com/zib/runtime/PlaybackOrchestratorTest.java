@@ -77,12 +77,12 @@ class PlaybackOrchestratorTest {
 
         orchestrator.play(List.of(
                 new PlaybackEvent.Speech(Path.of("segment-001.wav")),
-                new PlaybackEvent.Sound(Path.of("otroski_smeh.wav")),
+                new PlaybackEvent.Sound(Path.of("children_laughing.wav")),
                 new PlaybackEvent.Speech(Path.of("segment-002.wav"))));
 
         assertEquals(List.of(
                 "blocking:segment-001.wav",
-                "background:otroski_smeh.wav",
+                "background:children_laughing.wav",
                 "blocking:segment-002.wav"),
                 audioPlayer.events());
     }

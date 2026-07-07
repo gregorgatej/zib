@@ -58,22 +58,22 @@ Required demo parse expectation:
 Input:
 
 ```zib
-"Danes je prečudovit dan. Otroci se zunaj igrajo ${otroski_smeh.wav} na igrišču."
+"Today is a beautiful day. The children are playing outside ${children_laughing.wav} on the playground."
 ```
 
 Expected tokens:
 
 ```text
-TEXT: "Danes je prečudovit dan. Otroci se zunaj igrajo "
-SOUND: "otroski_smeh.wav"
-TEXT: " na igrišču."
+TEXT: "Today is a beautiful day. The children are playing outside "
+SOUND: "children_laughing.wav"
+TEXT: " on the playground."
 ```
 
 ### 3.2 Validator tests: `ZibValidatorTest`
 
 Required tests:
 
-1. Accepts existing `otroski_smeh.wav` in same directory as `.zib`.
+1. Accepts existing `children_laughing.wav` in same directory as `.zib`.
 2. Rejects missing WAV file.
 3. Rejects absolute path marker.
 4. Rejects parent traversal marker.
@@ -110,7 +110,7 @@ Expected event order for demo:
 
 ```text
 playBlocking(segment-001.wav)
-playInBackground(otroski_smeh.wav)
+playInBackground(children_laughing.wav)
 playBlocking(segment-002.wav)
 return
 ```
@@ -150,7 +150,7 @@ java -jar target/zib-0.1.0.jar examples/demo.zib
 Expected:
 
 - speech starts;
-- when reaching the marker position, `otroski_smeh.wav` starts in background;
+- when reaching the marker position, `children_laughing.wav` starts in background;
 - speech continues without waiting for laughter sound to finish;
 - app exits when speech ends.
 

@@ -72,13 +72,13 @@ A POC `.zib` file contains exactly one main quoted block.
 Valid example:
 
 ```zib
-"Danes je prečudovit dan. Otroci se zunaj igrajo ${otroski_smeh.wav} na igrišču."
+"Today is a beautiful day. The children are playing outside ${children_laughing.wav} on the playground."
 ```
 
 The concrete demo file must contain exactly this line:
 
 ```zib
-"Danes je prečudovit dan. Otroci se zunaj igrajo ${otroski_smeh.wav} na igrišču."
+"Today is a beautiful day. The children are playing outside ${children_laughing.wav} on the playground."
 ```
 
 ### 3.1 Syntax rules
@@ -101,9 +101,9 @@ The concrete demo file must contain exactly this line:
 The parser converts the quoted block into an ordered token list:
 
 ```text
-TEXT("Danes je prečudovit dan. Otroci se zunaj igrajo ")
-SOUND("otroski_smeh.wav")
-TEXT(" na igrišču.")
+TEXT("Today is a beautiful day. The children are playing outside ")
+SOUND("children_laughing.wav")
+TEXT(" on the playground.")
 ```
 
 Multiple sound markers are supported:
@@ -149,7 +149,7 @@ ERROR: espeak-ng was not found on PATH. Install it first, for example: sudo apt 
 Example missing sound message:
 
 ```text
-ERROR: Referenced sound file not found next to .zib file: otroski_smeh.wav
+ERROR: Referenced sound file not found next to .zib file: children_laughing.wav
 ```
 
 ### 4.2 Temporary directory
@@ -273,7 +273,7 @@ The POC is acceptable only if all of the following are true:
 
 - `mvn test` passes.
 - `mvn package` produces `target/zib-0.1.0.jar`.
-- Running `java -jar target/zib-0.1.0.jar examples/demo.zib` works on Linux when `espeak-ng` is installed and `examples/otroski_smeh.wav` exists.
+- Running `java -jar target/zib-0.1.0.jar examples/demo.zib` works on Linux when `espeak-ng` is installed and `examples/children_laughing.wav` exists.
 - Missing `espeak-ng` produces a clear error.
 - Missing marker WAV produces a clear error.
 - `.mp3` marker is rejected.

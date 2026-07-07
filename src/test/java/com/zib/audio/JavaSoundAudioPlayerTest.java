@@ -56,12 +56,12 @@ class JavaSoundAudioPlayerTest {
         FakeWavDecoder decoder = new FakeWavDecoder();
         FakeAudioOutputLine outputLine = new FakeAudioOutputLine();
         decoder.add("segment-001.wav", pcm(100, 100));
-        decoder.add("otroski_smeh.wav", pcm(10, 20));
+        decoder.add("children_laughing.wav", pcm(10, 20));
         decoder.add("segment-002.wav", pcm(1000, 2000));
         JavaSoundAudioPlayer player = new JavaSoundAudioPlayer(decoder, outputLine, 1);
 
         player.playBlocking(Path.of("segment-001.wav"));
-        player.playInBackground(Path.of("otroski_smeh.wav"));
+        player.playInBackground(Path.of("children_laughing.wav"));
         player.playBlocking(Path.of("segment-002.wav"));
         player.close();
 

@@ -41,7 +41,7 @@ java -jar target/zib-0.1.0.jar examples/demo.zib
 The demo `.zib` file must contain:
 
 ```zib
-"Danes je prečudovit dan. Otroci se zunaj igrajo ${otroski_smeh.wav} na igrišču."
+"Today is a beautiful day. The children are playing outside ${children_laughing.wav} on the playground."
 ```
 
 ---
