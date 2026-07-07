@@ -12,12 +12,16 @@ public final class PlaybackOrchestrator {
     }
 
     public void play(List<PlaybackEvent> playbackEvents) {
-        for (PlaybackEvent event : playbackEvents) {
-            if (event instanceof PlaybackEvent.Speech speech) {
-                audioPlayer.playBlocking(speech.wavFile());
-            } else if (event instanceof PlaybackEvent.Sound sound) {
-                audioPlayer.playInBackground(sound.wavFile());
+        try {
+            for (PlaybackEvent event : playbackEvents) {
+                if (event instanceof PlaybackEvent.Speech speech) {
+                    audioPlayer.playBlocking(speech.wavFile());
+                } else if (event instanceof PlaybackEvent.Sound sound) {
+                    audioPlayer.playInBackground(sound.wavFile());
+                }
             }
+        } finally {
+            audioPlayer.close();
         }
     }
 }

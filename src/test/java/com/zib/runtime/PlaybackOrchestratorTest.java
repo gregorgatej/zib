@@ -87,13 +87,30 @@ class PlaybackOrchestratorTest {
                 audioPlayer.events());
     }
 
+    @Test
+    void closesAudioPlayerWhenPlaybackThrows() {
+        RecordingAudioPlayer audioPlayer = new RecordingAudioPlayer();
+        audioPlayer.failBlocking = true;
+        PlaybackOrchestrator orchestrator = new PlaybackOrchestrator(audioPlayer);
+
+        org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class,
+                () -> orchestrator.play(List.of(new PlaybackEvent.Speech(Path.of("segment-001.wav")))));
+
+        assertTrue(audioPlayer.closed());
+    }
+
     private static final class RecordingAudioPlayer implements AudioPlayer {
         private final List<String> events = new ArrayList<>();
         private boolean backgroundWaited;
         private boolean returnedFromBackgroundStart;
+        private boolean failBlocking;
+        private boolean closed;
 
         @Override
         public void playBlocking(Path wavFile) {
+            if (failBlocking) {
+                throw new RuntimeException("playback failed");
+            }
             events.add("blocking:" + wavFile);
         }
 
@@ -101,6 +118,11 @@ class PlaybackOrchestratorTest {
         public void playInBackground(Path wavFile) {
             events.add("background:" + wavFile);
             returnedFromBackgroundStart = true;
+        }
+
+        @Override
+        public void close() {
+            closed = true;
         }
 
         private List<String> events() {
@@ -113,6 +135,10 @@ class PlaybackOrchestratorTest {
 
         private boolean returnedFromBackgroundStart() {
             return returnedFromBackgroundStart;
+        }
+
+        private boolean closed() {
+            return closed;
         }
     }
 }

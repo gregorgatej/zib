@@ -6,4 +6,7 @@ public interface AudioPlayer {
     void playBlocking(Path wavFile);
 
     void playInBackground(Path wavFile);
+
+    default void close() {
+    }
 }

@@ -261,6 +261,88 @@ Use the report format from `AGENTS.md` and separate automated test evidence from
 
 ---
 
+# Work Order 5.1 — Added-on single-line Java Sound playback fix
+
+## Why this work order exists
+
+This is an added-on corrective work order discovered during manual verification of Work Order 5.
+
+Manual run failed with:
+
+```text
+ERROR: Audio line unavailable for WAV file: /tmp/zib-15192541996189026679/segment-002.wav. Temporary files kept at: /tmp/zib-15192541996189026679
+```
+
+The generated files and referenced effect were then verified outside ZIB:
+
+```bash
+aplay /tmp/zib-15192541996189026679/segment-001.wav
+aplay /tmp/zib-15192541996189026679/segment-002.wav
+aplay examples/otroski_smeh.wav
+```
+
+All three WAV files played normally. This points to Java Sound `Clip` line contention during concurrent background effect playback and the next speech segment, not invalid WAV files.
+
+## Governing instructions
+
+Read `AGENTS.md`, `TECHNICAL_SPEC.md`, `ARCHITECTURE.md`, and `TESTING_STRATEGY.md` first.
+
+## Goal
+
+Fix Java Sound playback so the demo can continue from a background effect into the next speech segment without opening multiple simultaneous output lines.
+
+## Scope
+
+Implement:
+
+- single shared Java Sound output line for runtime playback;
+- in-memory WAV decoding to a common PCM format;
+- runtime mixing of active background effects into speech chunks;
+- lifecycle cleanup so the output line closes after playback success or failure;
+- tests proving background effects do not require a second Java Sound output line.
+
+## Non-goals
+
+- Do not generate a single final mixed WAV file.
+- No mixing/export feature.
+- No MP3 support.
+- No GUI.
+- No waiting for background sounds after final speech.
+
+## Tests required
+
+- single-output-line audio tests using fake decoder/output-line seams;
+- speech-only playback test;
+- background-before-speech test proving no write happens until speech advances;
+- demo-order mixing test for `segment-001.wav`, `otroski_smeh.wav`, `segment-002.wav`;
+- background-longer-than-final-speech test proving the effect is cut off;
+- cleanup-on-failure test.
+
+Run:
+
+```bash
+mvn test
+mvn package
+```
+
+Manual smoke test if audio environment is available:
+
+```bash
+java -jar target/zib-0.1.0.jar examples/demo.zib
+```
+
+Expected manual result:
+
+- no `Audio line unavailable` error;
+- speech continues after `${otroski_smeh.wav}`;
+- app exits after final speech.
+
+## Final report required
+
+Use the report format from `AGENTS.md` and separate automated test evidence from manual smoke test evidence.
+
+---
+
 # Work Order 6 — End-to-end documentation and release readiness check
 
 ## Governing instructions
@@ -305,4 +387,3 @@ java -jar target/zib-0.1.0.jar examples/demo.zib
 ## Final report required
 
 Use the report format from `AGENTS.md`.
-
