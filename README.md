@@ -34,10 +34,10 @@ Not supported in POC:
 `examples/demo.zib`:
 
 ```zib
-"Danes je prečudovit dan. Otroci se zunaj igrajo ${otroski_smeh.wav} na igrišču."
+"Today is a beautiful day. The children are playing outside ${children_laughing.wav} on the playground."
 ```
 
-`otroski_smeh.wav` must be in the same directory as `demo.zib`.
+`children_laughing.wav` must be in the same directory as `demo.zib`.
 
 ---
 

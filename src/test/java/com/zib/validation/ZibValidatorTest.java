@@ -24,8 +24,8 @@ class ZibValidatorTest {
     @Test
     void acceptsExistingWavInSameDirectoryAsZibFile() throws IOException {
         Path zibFile = Files.createFile(tempDir.resolve("demo.zib"));
-        Files.createFile(tempDir.resolve("otroski_smeh.wav"));
-        ZibDocument document = documentWithSound("otroski_smeh.wav");
+        Files.createFile(tempDir.resolve("children_laughing.wav"));
+        ZibDocument document = documentWithSound("children_laughing.wav");
 
         assertDoesNotThrow(() -> validator.validate(document, zibFile));
     }

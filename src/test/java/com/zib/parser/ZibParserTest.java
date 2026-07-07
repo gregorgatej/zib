@@ -13,12 +13,12 @@ class ZibParserTest {
 
     @Test
     void parsesTheRequiredDemoFile() {
-        ZibDocument document = parser.parse("\"Danes je prečudovit dan. Otroci se zunaj igrajo ${otroski_smeh.wav} na igrišču.\"");
+        ZibDocument document = parser.parse("\"Today is a beautiful day. The children are playing outside ${children_laughing.wav} on the playground.\"");
 
         assertTokens(document.tokens(), List.of(
-                new ZibToken.Text("Danes je prečudovit dan. Otroci se zunaj igrajo "),
-                new ZibToken.Sound("otroski_smeh.wav"),
-                new ZibToken.Text(" na igrišču.")));
+                new ZibToken.Text("Today is a beautiful day. The children are playing outside "),
+                new ZibToken.Sound("children_laughing.wav"),
+                new ZibToken.Text(" on the playground.")));
     }
 
     @Test

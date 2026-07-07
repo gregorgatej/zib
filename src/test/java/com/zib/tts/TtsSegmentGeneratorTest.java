@@ -68,17 +68,17 @@ class TtsSegmentGeneratorTest {
         TtsSegmentGenerator generator = new TtsSegmentGenerator(ttsService);
         Path zibFile = tempDir.resolve("demo.zib");
         Path ttsDir = tempDir.resolve("zib-generated");
-        ZibDocument document = new ZibParser().parse("\"Danes je prečudovit dan. Otroci se zunaj igrajo ${otroski_smeh.wav} na igrišču.\"");
+        ZibDocument document = new ZibParser().parse("\"Today is a beautiful day. The children are playing outside ${children_laughing.wav} on the playground.\"");
 
         List<PlaybackEvent> events = generator.generate(document, zibFile, ttsDir);
 
         assertEquals(List.of(
-                new Generation("Danes je prečudovit dan. Otroci se zunaj igrajo ", ttsDir.resolve("segment-001.wav")),
-                new Generation(" na igrišču.", ttsDir.resolve("segment-002.wav"))),
+                new Generation("Today is a beautiful day. The children are playing outside ", ttsDir.resolve("segment-001.wav")),
+                new Generation(" on the playground.", ttsDir.resolve("segment-002.wav"))),
                 ttsService.generations());
         assertEquals(List.of(
                 new PlaybackEvent.Speech(ttsDir.resolve("segment-001.wav")),
-                new PlaybackEvent.Sound(tempDir.resolve("otroski_smeh.wav")),
+                new PlaybackEvent.Sound(tempDir.resolve("children_laughing.wav")),
                 new PlaybackEvent.Speech(ttsDir.resolve("segment-002.wav"))),
                 events);
     }
