@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.zib.parser.ZibDocument;
+import com.zib.parser.ZibParser;
 import com.zib.parser.ZibToken;
 import com.zib.runtime.PlaybackEvent;
 
@@ -58,6 +59,27 @@ class TtsSegmentGeneratorTest {
         assertEquals(List.of(
                 new PlaybackEvent.Sound(tempDir.resolve("effect.wav")),
                 new PlaybackEvent.Speech(ttsDir.resolve("segment-001.wav"))),
+                events);
+    }
+
+    @Test
+    void convertsRequiredDemoDocumentToExpectedPlaybackEvents() {
+        RecordingTtsService ttsService = new RecordingTtsService();
+        TtsSegmentGenerator generator = new TtsSegmentGenerator(ttsService);
+        Path zibFile = tempDir.resolve("demo.zib");
+        Path ttsDir = tempDir.resolve("zib-generated");
+        ZibDocument document = new ZibParser().parse("\"Danes je prečudovit dan. Otroci se zunaj igrajo ${otroski_smeh.wav} na igrišču.\"");
+
+        List<PlaybackEvent> events = generator.generate(document, zibFile, ttsDir);
+
+        assertEquals(List.of(
+                new Generation("Danes je prečudovit dan. Otroci se zunaj igrajo ", ttsDir.resolve("segment-001.wav")),
+                new Generation(" na igrišču.", ttsDir.resolve("segment-002.wav"))),
+                ttsService.generations());
+        assertEquals(List.of(
+                new PlaybackEvent.Speech(ttsDir.resolve("segment-001.wav")),
+                new PlaybackEvent.Sound(tempDir.resolve("otroski_smeh.wav")),
+                new PlaybackEvent.Speech(ttsDir.resolve("segment-002.wav"))),
                 events);
     }
 

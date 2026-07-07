@@ -6,11 +6,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import com.zib.audio.AudioPlayer;
+import com.zib.audio.JavaSoundAudioPlayer;
 import com.zib.error.ZibException;
 import com.zib.parser.ZibDocument;
 import com.zib.parser.ZibParseException;
 import com.zib.parser.ZibParser;
 import com.zib.runtime.PlaybackEvent;
+import com.zib.runtime.PlaybackOrchestrator;
 import com.zib.runtime.TempDirectoryManager;
 import com.zib.tts.EspeakNgService;
 import com.zib.tts.TtsSegmentGenerator;
@@ -31,10 +34,10 @@ public final class ZibApp {
 
     static int run(String[] args, PrintStream out, PrintStream err) {
         TtsService ttsService = new EspeakNgService();
-        return run(args, out, err, ttsService, new TempDirectoryManager());
+        return run(args, out, err, ttsService, new TempDirectoryManager(), new JavaSoundAudioPlayer());
     }
 
-    static int run(String[] args, PrintStream out, PrintStream err, TtsService ttsService, TempDirectoryManager tempDirectoryManager) {
+    static int run(String[] args, PrintStream out, PrintStream err, TtsService ttsService, TempDirectoryManager tempDirectoryManager, AudioPlayer audioPlayer) {
         ValidationResult validation = CliArguments.validate(args);
         if (!validation.isValid()) {
             err.println("ERROR: " + validation.errorMessage().orElse("invalid command line arguments"));
@@ -51,12 +54,12 @@ public final class ZibApp {
 
             tempDirectory = tempDirectoryManager.createTempDirectory();
             List<PlaybackEvent> playbackEvents = new TtsSegmentGenerator(ttsService).generate(document, inputFile, tempDirectory);
+            new PlaybackOrchestrator(audioPlayer).play(playbackEvents);
             tempDirectoryManager.deleteAfterSuccess(tempDirectory);
 
             out.println("Input accepted: " + inputFile);
             out.println("Parser and sound marker validation completed.");
-            out.println("Generated TTS playback events: " + playbackEvents.size());
-            out.println("Audio playback is not implemented yet.");
+            out.println("Generated and played events: " + playbackEvents.size());
             return 0;
         } catch (ZibParseException | ZibValidationException exception) {
             err.println("ERROR: " + exception.getMessage());
