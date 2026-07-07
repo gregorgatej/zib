@@ -30,8 +30,10 @@ class ZibAppTest {
     }
 
     @Test
-    void acceptsRegularFileWithoutStartingParserOrAudio() throws IOException {
+    void parsesAndValidatesRegularFileWithoutStartingAudio() throws IOException {
         Path inputFile = Files.createFile(tempDir.resolve("demo.zib"));
+        Files.writeString(inputFile, "\"Hello ${effect.wav}\"", StandardCharsets.UTF_8);
+        Files.createFile(tempDir.resolve("effect.wav"));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ByteArrayOutputStream err = new ByteArrayOutputStream();
 
@@ -39,8 +41,24 @@ class ZibAppTest {
 
         assertEquals(0, exitCode);
         assertTrue(out.toString(StandardCharsets.UTF_8).contains("Input accepted: " + inputFile));
-        assertTrue(out.toString(StandardCharsets.UTF_8).contains("Parser and audio playback are not implemented yet."));
+        assertTrue(out.toString(StandardCharsets.UTF_8).contains("Parser and sound marker validation completed."));
+        assertTrue(out.toString(StandardCharsets.UTF_8).contains("TTS and audio playback are not implemented yet."));
         assertEquals("", err.toString(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void writesUserFacingErrorForMissingReferencedSound() throws IOException {
+        Path inputFile = Files.createFile(tempDir.resolve("demo.zib"));
+        Files.writeString(inputFile, "\"Hello ${missing.wav}\"", StandardCharsets.UTF_8);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+
+        int exitCode = ZibApp.run(new String[] { inputFile.toString() }, printStream(out), printStream(err));
+
+        assertEquals(1, exitCode);
+        assertEquals("", out.toString(StandardCharsets.UTF_8));
+        assertEquals("ERROR: Referenced sound file not found next to .zib file: missing.wav%n".formatted(),
+                err.toString(StandardCharsets.UTF_8));
     }
 
     private static PrintStream printStream(ByteArrayOutputStream output) {
