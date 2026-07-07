@@ -14,7 +14,7 @@ Reference links:
 - eSpeak NG: https://github.com/espeak-ng/espeak-ng
 - Java 17 `ProcessBuilder`: https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/ProcessBuilder.html
 - Java Sound playback guide: https://docs.oracle.com/javase/8/docs/technotes/guides/sound/programmer_guide/chapter4.html
-- Java `Clip`: https://docs.oracle.com/javase/8/docs/api/javax/sound/sampled/Clip.html
+- Java `SourceDataLine`: https://docs.oracle.com/javase/8/docs/api/javax/sound/sampled/SourceDataLine.html
 - Maven getting started: https://maven.apache.org/guides/getting-started/
 - JUnit 5 user guide: https://docs.junit.org/current/user-guide/
 - Codex `AGENTS.md` guide: https://developers.openai.com/codex/guides/agents-md
@@ -217,9 +217,10 @@ For POC, use Java Sound API.
 Recommended implementation:
 
 - Use `AudioSystem.getAudioInputStream(...)`.
-- Use `Clip` for playback.
-- For speech playback: start clip and wait until it finishes.
-- For background effects: start clip and return immediately.
+- Use one `SourceDataLine` for runtime output.
+- For speech playback: write speech chunks to the output line and block until the speech segment is complete.
+- For background effects: register the WAV data as an active background sound and return immediately.
+- Mix active background effects into speech chunks while speech is advancing.
 
 Keep audio implementation behind an interface so parser/orchestrator tests do not require actual speakers.
 
@@ -282,4 +283,3 @@ The POC is acceptable only if all of the following are true:
 - The process exits when speech playback ends.
 - Temp files are deleted after success and retained after failure.
 - README contains setup and run instructions.
-

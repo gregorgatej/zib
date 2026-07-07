@@ -137,6 +137,8 @@ Responsibilities:
 - load WAV file;
 - play speech blocking;
 - start sound effects in background;
+- use one Java Sound output line for runtime playback;
+- mix active background effects into speech chunks;
 - avoid leaking audio resources as much as possible for POC.
 
 ### 2.9 `PlaybackOrchestrator`
@@ -216,4 +218,3 @@ Possible later changes:
 - configuration file.
 
 Do not implement these until the POC behavior is verified and test-backed.
-

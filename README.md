@@ -72,6 +72,12 @@ espeak-ng --version
 mvn clean package
 ```
 
+The executable JAR is written to:
+
+```text
+target/zib-0.1.0.jar
+```
+
 ---
 
 ## Test
@@ -94,13 +100,24 @@ mvn verify -Pintegration-tests
 java -jar target/zib-0.1.0.jar examples/demo.zib
 ```
 
-Current skeleton behavior:
+Expected behavior:
 
-1. The app validates that exactly one argument was provided.
-2. It validates that the argument exists and is a regular file.
-3. It reports that parser and audio playback are not implemented yet.
+1. The app validates the CLI argument and `.zib` file.
+2. It parses the quoted `.zib` block and sound marker.
+3. It verifies `children_laughing.wav` exists next to `demo.zib`.
+4. It checks `espeak-ng` is available.
+5. It generates temporary speech WAV files under a `zib-` temp directory.
+6. It plays speech sequentially and starts the WAV effect at the marker while speech continues.
+7. It exits after final speech and deletes temp files on success.
 
-Parser, eSpeak NG invocation, and WAV playback will be added in later work orders.
+On failure, errors start with `ERROR:`. If failure happens after temp file creation, generated temp files are retained and the temp directory path is printed.
+
+Common setup errors:
+
+```text
+ERROR: espeak-ng was not found on PATH. Install it first, for example: sudo apt install espeak-ng
+ERROR: Referenced sound file not found next to .zib file: children_laughing.wav
+```
 
 ---
 
